@@ -9,6 +9,9 @@ const reqValidate = require('./module/reqValidate')
 global.browserLength = 0
 global.browserLimit = Number(process.env.browserLimit) || 20
 global.timeOut = Number(process.env.timeOut || 60000)
+const cliArgs = new Set(process.argv.slice(2).map((arg) => String(arg || '').toLowerCase()))
+const isDetailedLogsEnvEnabled = ['1', 'true', 'yes', 'on'].includes(String(process.env.DETAILED_LOGS || '').toLowerCase())
+global.detailedLogs = cliArgs.has('--verbose') || cliArgs.has('--debug') || isDetailedLogsEnvEnabled
 
 app.use(bodyParser.json({}))
 app.use(bodyParser.urlencoded({ extended: true }))

@@ -1,4 +1,4 @@
-const { connect } = require("puppeteer-real-browser")
+const { connect } = require("@bytadrian/puppeteer-real-browser")
 async function createBrowser() {
     try {
         if (global.finished == true) return

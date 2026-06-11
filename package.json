@@ -35,7 +35,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "jest": "^29.7.0",
-    "puppeteer-real-browser": "^1.4.0",
+    "@bytadrian/puppeteer-real-browser": "github:bytAdrian/puppeteer-real-browser",
     "supertest": "^7.0.0"
   }
 }
