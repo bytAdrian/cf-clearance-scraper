@@ -1,26 +1,23 @@
-FROM node:latest
+FROM node:24-bookworm
 
 RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
     ca-certificates \
-    apt-transport-https \
     chromium \
-    chromium-driver \
     xvfb \
+    fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
-ENV CHROME_BIN=/usr/bin/chromium
+# chrome-launcher (used by puppeteer-real-browser) reads CHROME_PATH
+ENV CHROME_PATH=/usr/bin/chromium
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package*.json .npmrc ./
 
-RUN npm update
-RUN npm install
-RUN npm i -g pm2
+RUN npm ci
+
 COPY . .
 
 EXPOSE 3000
 
-CMD ["pm2-runtime", "src/index.js"]
+CMD ["node", "src/index.js"]

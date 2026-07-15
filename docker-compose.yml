@@ -1,0 +1,15 @@
+services:
+  cf-clearance-scraper:
+    build: .
+    container_name: cf-clearance-scraper
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - CHROME_NO_SANDBOX=true
+      - DETAILED_LOGS=${DETAILED_LOGS:-false}
+    shm_size: "1gb"

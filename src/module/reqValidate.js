@@ -30,6 +30,16 @@ const schema = {
         },
         "siteKey": {
             "type": "string"
+        },
+        "download": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" },
+                "timeout": { "type": "integer", "minimum": 5000, "maximum": 300000 },
+                "clickSelector": { "type": "string", "minLength": 1, "maxLength": 500 }
+            },
+            "required": ["enabled"],
+            "additionalProperties": false
         }
     },
     "required": ["mode", "url"],

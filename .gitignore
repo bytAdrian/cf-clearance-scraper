@@ -1,3 +1,29 @@
-node_modules
-project_memory.md
+# Secrets / env
+**/.env
+**/.env.*
+secrets.json
+**/credentials.json
+*.pem
+*.key
+
+# Dependencies / build output
+node_modules/
+build/
+dist/
+
+# Logs
+*.log
+
+# IDE
 .cursor/
+
+# OS
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/

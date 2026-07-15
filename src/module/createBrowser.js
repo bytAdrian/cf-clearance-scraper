@@ -1,4 +1,10 @@
 const { connect } = require("@bytadrian/puppeteer-real-browser")
+
+const launchArgs = []
+if (['1', 'true', 'yes', 'on'].includes(String(process.env.CHROME_NO_SANDBOX || '').toLowerCase())) {
+    launchArgs.push('--no-sandbox', '--disable-dev-shm-usage')
+}
+
 async function createBrowser() {
     try {
         if (global.finished == true) return
@@ -10,6 +16,7 @@ async function createBrowser() {
         const { browser } = await connect({
             headless: false,
             turnstile: true,
+            args: launchArgs,
             connectOption: { defaultViewport: null },
             disableXvfb: false,
         })
