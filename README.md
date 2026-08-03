@@ -1,8 +1,3 @@
-[![ScrapeDo](src/data/sdo.png)](https://scrape.do/?utm_source=github&utm_medium=repo_ccs)
-
-> [!WARNING]
-> This repo will no longer receive updates. Thank you to everyone who supported it.
-
 # CF Clearance Scraper
 
 This library was created for testing and training purposes to retrieve the page source of websites, create Cloudflare Turnstile tokens and create Cloudflare WAF sessions.
@@ -11,37 +6,49 @@ Cloudflare protection not only checks cookies in the request. It also checks var
 
 Cookies with cf in the name belong to Cloudflare. You can find out what these cookies do and how long they are valid by **[Clicking Here](https://developers.cloudflare.com/fundamentals/reference/policies-compliances/cloudflare-cookies/)**.
 
-## Sponsor
-
-[![Capsolver](src/data/capsolver.png)](https://www.capsolver.com/?utm_source=github&utm_medium=repo&utm_campaign=scraping&utm_term=cf-clearance-scraper)
-
 ## Installation
 
-Installation with Docker is recommended.
+Installation with Docker Compose is recommended. The bundled `docker-compose.yml` ships hardened defaults: loopback-only port binding, an isolated network, a non-root read-only container, and resource limits.
 
-**Docker**
+> [!IMPORTANT]
+> An API token is required: in production the server refuses to start without `authToken`, and every request must send it via `Authorization: Bearer <token>` header or the `authToken` body field.
 
-Please make sure you have installed the latest image. If you get an error, try downloading the latest version by going to Docker Hub.
+**Docker Compose**
 
 ```bash
-sudo docker rmi zfcsoftware/cf-clearance-scraper:latest --force
+git clone https://github.com/bytAdrian/cf-clearance-scraper
+cd cf-clearance-scraper
+
+cat > .env <<EOF
+authToken=$(openssl rand -hex 32)
+trustedProxyCidr=172.28.0.1
+EOF
+chmod 600 .env
+
+docker compose up -d --build
 ```
 
+The API listens only on `127.0.0.1:3000` of the host. For external access put a tunnel or reverse proxy (e.g. cloudflared) in front — do not publish the port on all interfaces.
+
+**Docker (manual)**
+
 ```bash
-docker run -d -p 3000:3000 \
--e PORT=3000 \
+docker build -t cf-clearance-scraper .
+docker run -d -p 127.0.0.1:3000:3000 \
+-e NODE_ENV=production \
+-e authToken=<long-random-token> \
 -e browserLimit=20 \
 -e timeOut=60000 \
-zfcsoftware/cf-clearance-scraper:latest
+cf-clearance-scraper
 ```
 
 **Github**
 
 ```bash
-git clone https://github.com/zfcsoftware/cf-clearance-scraper
+git clone https://github.com/bytAdrian/cf-clearance-scraper
 cd cf-clearance-scraper
-npm install
-npm run start
+npm ci
+authToken=<long-random-token> npm run start
 ```
 
 ## Create Cloudflare WAF Session

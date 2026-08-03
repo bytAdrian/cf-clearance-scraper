@@ -28,14 +28,15 @@
   "license": "ISC",
   "description": "This package is an experimental and educational package created for Cloudflare protections.",
   "dependencies": {
+    "@bytadrian/puppeteer-real-browser": "github:bytAdrian/puppeteer-real-browser#3571607419ec97c03843fa0d60a22cff1b93c530",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.0",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
     "jest": "^29.7.0",
-    "@bytadrian/puppeteer-real-browser": "github:bytAdrian/puppeteer-real-browser",
     "supertest": "^7.0.0"
   }
 }
