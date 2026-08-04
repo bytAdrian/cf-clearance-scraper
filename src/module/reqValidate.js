@@ -29,7 +29,8 @@ const schema = {
             "type": "string"
         },
         "siteKey": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^0x[A-Za-z0-9_-]{20,50}$"
         }
     },
     "required": ["mode", "url"],
