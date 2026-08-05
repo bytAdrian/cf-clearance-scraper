@@ -2,48 +2,48 @@
 name: cf-scraper security hardening v2
 overview: "Consolidated hardening plan for cf-clearance-scraper: remove the download capture feature entirely (session cookies/headers/tokens only), fail-closed auth with correct guard ordering, scoped trust-proxy, container network isolation and hardening, pinned base image + git dependency, and app/CI defense-in-depth. Supersedes cf-scraper_security_hardening_bbfd4f89.plan.md."
 todos:
-  - id: remove-download
-    content: Strip download capture from wafSession.js, index.js, reqValidate.js and docs; waf-session returns cookies/headers only
-    status: completed
-  - id: auth-fail-closed
-    content: Production startup guard requiring authToken; reorder guards to 401 -> 403 -> 400; timing-safe token compare
-    status: completed
-  - id: scope-trust-proxy
-    content: Replace blanket trust proxy '1' with env-driven trustedProxyCidr (compose network subnet)
-    status: completed
-  - id: isolate-network
-    content: Add explicit/internal Docker network in docker-compose.yml to prevent sibling-container access
-    status: completed
-  - id: container-hardening
-    content: Non-root USER; no-new-privileges, cap_drop ALL, read_only + sized tmpfs, mem_limit, pids_limit, init in compose
-    status: completed
-  - id: pin-base-image
-    content: Pin Dockerfile base to current Node 24 LTS patch tag + digest
-    status: completed
-  - id: pin-git-dep
-    content: Commit-pin puppeteer-real-browser via git+https in package.json (drops SSH build requirement)
-    status: completed
-  - id: image-hygiene
-    content: Move jest/supertest to devDependencies, remove unused dotenv, build with npm ci --omit=dev
-    status: completed
-  - id: app-defense
-    content: Generic client error messages, explicit 50kb body limit, optional CORS scoping, disable x-powered-by
-    status: completed
-  - id: remove-httpbin
-    content: Replace per-request httpbin.org Accept-Language probe with local derivation
-    status: completed
-  - id: ci-supply-chain
-    content: SHA-pin GitHub Actions, npm ci in check_test.yaml, decide docker_hub.yaml fate on this fork
-    status: completed
-  - id: docs-alignment
-    content: Align README quick-start with hardened deploy (authToken required, loopback bind); update project_memory.md
-    status: completed
-  - id: ssrf-optional
-    content: Optional SSRF allowlist (schemes http/https, block private/link-local/metadata ranges) gated on threat model
-    status: pending
-  - id: health-optional
-    content: Optional minimal unauthenticated GET /health + Docker HEALTHCHECK
-    status: completed
+    - id: remove-download
+      content: Strip download capture from wafSession.js, index.js, reqValidate.js and docs; waf-session returns cookies/headers only
+      status: completed
+    - id: auth-fail-closed
+      content: Production startup guard requiring authToken; reorder guards to 401 -> 403 -> 400; timing-safe token compare
+      status: completed
+    - id: scope-trust-proxy
+      content: Replace blanket trust proxy '1' with env-driven trustedProxyCidr (compose network subnet)
+      status: completed
+    - id: isolate-network
+      content: Add explicit/internal Docker network in docker-compose.yml to prevent sibling-container access
+      status: completed
+    - id: container-hardening
+      content: Non-root USER; no-new-privileges, cap_drop ALL, read_only + sized tmpfs, mem_limit, pids_limit, init in compose
+      status: completed
+    - id: pin-base-image
+      content: Pin Dockerfile base to current Node 24 LTS patch tag + digest
+      status: completed
+    - id: pin-git-dep
+      content: Commit-pin puppeteer-real-browser via git+https in package.json (drops SSH build requirement)
+      status: completed
+    - id: image-hygiene
+      content: Move jest/supertest to devDependencies, remove unused dotenv, build with npm ci --omit=dev
+      status: completed
+    - id: app-defense
+      content: Generic client error messages, explicit 50kb body limit, optional CORS scoping, disable x-powered-by
+      status: completed
+    - id: remove-httpbin
+      content: Replace per-request httpbin.org Accept-Language probe with local derivation
+      status: completed
+    - id: ci-supply-chain
+      content: SHA-pin GitHub Actions, npm ci in check_test.yaml, decide docker_hub.yaml fate on this fork
+      status: completed
+    - id: docs-alignment
+      content: Align README quick-start with hardened deploy (authToken required, loopback bind); update project_memory.md
+      status: completed
+    - id: ssrf-optional
+      content: Optional SSRF allowlist (schemes http/https, block private/link-local/metadata ranges) gated on threat model
+      status: pending
+    - id: health-optional
+      content: Optional minimal unauthenticated GET /health + Docker HEALTHCHECK
+      status: completed
 isProject: false
 ---
 
@@ -89,7 +89,7 @@ Auth is currently skipped entirely when `authToken` is unset (`index.js:96`), an
 
 `127.0.0.1:3000:3000` blocks external host access but not other containers on the default bridge.
 
-- Add an explicit network; mark it `internal: false` only because outbound scraping is required — the point is that no *other* compose project/container shares it. Attach only a proxy/tunnel sidecar if one is ever added.
+- Add an explicit network; mark it `internal: false` only because outbound scraping is required — the point is that no _other_ compose project/container shares it. Attach only a proxy/tunnel sidecar if one is ever added.
 - Pin the subnet (`ipam`) so `trustedProxyCidr` has a stable value.
 - Comment in the file: API auth must always be enabled.
 

@@ -1,53 +1,53 @@
 services:
-  cf-clearance-scraper:
-    build: .
-    container_name: cf-clearance-scraper
-    restart: unless-stopped
-    init: true
-    read_only: true
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    pids_limit: 512
-    # Tune to the host; on the 16 GB Pi 5 this leaves ample room for n8n/postgres.
-    mem_limit: 4g
-    shm_size: "1gb"
-    tmpfs:
-      # RAM-backed scratch for Chromium profiles, Xvfb's X11 socket, and the XDG dirs
-      # below — explicitly sized so it can never balloon into host memory.
-      - /tmp:size=512m,mode=1777
-    ports:
-      - "127.0.0.1:3000:3000"
-    env_file:
-      # Must define authToken (the app refuses to start in production without it)
-      # and should define trustedProxyCidr (the network gateway pinned below).
-      - .env
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - CHROME_NO_SANDBOX=true
-      - DETAILED_LOGS=${DETAILED_LOGS:-false}
-      # Chromium's config/cache under read_only land on the /tmp tmpfs.
-      - XDG_CONFIG_HOME=/tmp/.config
-      - XDG_CACHE_HOME=/tmp/.cache
-    networks:
-      - cfcs
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 60s
+    cf-clearance-scraper:
+        build: .
+        container_name: cf-clearance-scraper
+        restart: unless-stopped
+        init: true
+        read_only: true
+        security_opt:
+            - no-new-privileges:true
+        cap_drop:
+            - ALL
+        pids_limit: 512
+        # Tune to the host; on the 16 GB Pi 5 this leaves ample room for n8n/postgres.
+        mem_limit: 4g
+        shm_size: "1gb"
+        tmpfs:
+            # RAM-backed scratch for Chromium profiles, Xvfb's X11 socket, and the XDG dirs
+            # below — explicitly sized so it can never balloon into host memory.
+            - /tmp:size=512m,mode=1777
+        ports:
+            - "127.0.0.1:3000:3000"
+        env_file:
+            # Must define authToken (the app refuses to start in production without it)
+            # and should define trustedProxyCidr (the network gateway pinned below).
+            - .env
+        environment:
+            - NODE_ENV=production
+            - PORT=3000
+            - CHROME_NO_SANDBOX=true
+            - DETAILED_LOGS=${DETAILED_LOGS:-false}
+            # Chromium's config/cache under read_only land on the /tmp tmpfs.
+            - XDG_CONFIG_HOME=/tmp/.config
+            - XDG_CACHE_HOME=/tmp/.cache
+        networks:
+            - cfcs
+        healthcheck:
+            test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/health"]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 60s
 
 # Dedicated network: no other container shares it, and the pinned subnet gives
 # trustedProxyCidr a stable value — host-published 127.0.0.1:3000 traffic enters
 # the container from the gateway below. Adjust the subnet if it collides with an
 # existing docker network on the host.
 networks:
-  cfcs:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.28.0.0/24
-          gateway: 172.28.0.1
+    cfcs:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 172.28.0.0/24
+                  gateway: 172.28.0.1

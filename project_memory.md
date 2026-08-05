@@ -15,15 +15,15 @@
 
 ## Env vars (`.env`, chmod 600, gitignored + dockerignored)
 
-| Var | Purpose |
-|---|---|
-| `authToken` | Static API token. Random 64-hex generated with `openssl rand -hex 32`. **Required in production** — the server exits at startup if `NODE_ENV=production` and it is unset. Compared timing-safe. |
+| Var                | Purpose                                                                                                                                                                                                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `authToken`        | Static API token. Random 64-hex generated with `openssl rand -hex 32`. **Required in production** — the server exits at startup if `NODE_ENV=production` and it is unset. Compared timing-safe.                                                              |
 | `trustedProxyCidr` | Comma-separated IPs/CIDRs whose forwarded headers are trusted (Express `trust proxy`). In compose this is the network gateway `172.28.0.1`. Unset = forwarded headers untrusted. Replaces the old blanket `trustProxy` flag (which now only logs a warning). |
-| `allowedIps` | Optional comma-separated client IP allowlist, exact match (403 otherwise). Empty/unset = allow all (token still required). Needs `trustedProxyCidr` to see real client IPs behind the tunnel. |
-| `corsOrigins` | Optional comma-separated CORS origin allowlist. Unset = open CORS (server-to-server API; cosmetic). |
-| `browserLimit` | Max concurrent browser contexts (10 on the Pi). |
-| `timeOut` | Request timeout ms (60000). |
-| `DETAILED_LOGS` | `true` → verbose `[waf-session]` etc. logs (sanitized; no cookie/token/password values). |
+| `allowedIps`       | Optional comma-separated client IP allowlist, exact match (403 otherwise). Empty/unset = allow all (token still required). Needs `trustedProxyCidr` to see real client IPs behind the tunnel.                                                                |
+| `corsOrigins`      | Optional comma-separated CORS origin allowlist. Unset = open CORS (server-to-server API; cosmetic).                                                                                                                                                          |
+| `browserLimit`     | Max concurrent browser contexts (10 on the Pi).                                                                                                                                                                                                              |
+| `timeOut`          | Request timeout ms (60000).                                                                                                                                                                                                                                  |
+| `DETAILED_LOGS`    | `true` → verbose `[waf-session]` etc. logs (sanitized; no cookie/token/password values).                                                                                                                                                                     |
 
 ## API
 
@@ -32,6 +32,7 @@
 Guard order: 401 (auth) → 403 (IP allowlist) → 400 (schema) → 429 (browser limit). 500 errors return a generic `"Request failed"` (details go to server logs); only internal control-flow messages (`Timeout Error`, etc.) pass through.
 
 ### Modes
+
 `source` | `turnstile-min` | `turnstile-max` | `waf-session` — JSON responses.
 
 **Download capture was removed** (2026-07): the service only returns session data (cookies/headers/tokens/page source). The schema uses `additionalProperties: false`, so any request still sending a `download` field gets a **400**.
