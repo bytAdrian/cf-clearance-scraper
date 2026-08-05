@@ -1,73 +1,24 @@
-const express = require('express')
-const app = express()
-const port = process.env.PORT || 3000
-const bodyParser = require('body-parser')
-const authToken = process.env.authToken || null
-const cors = require('cors')
-const reqValidate = require('./module/reqValidate')
+"use strict";
 
-global.browserLength = 0
-global.browserLimit = Number(process.env.browserLimit) || 20
-global.timeOut = Number(process.env.timeOut || 60000)
-const cliArgs = new Set(process.argv.slice(2).map((arg) => String(arg || '').toLowerCase()))
-const isDetailedLogsEnvEnabled = ['1', 'true', 'yes', 'on'].includes(String(process.env.DETAILED_LOGS || '').toLowerCase())
-global.detailedLogs = cliArgs.has('--verbose') || cliArgs.has('--debug') || isDetailedLogsEnvEnabled
+const config = require("./config");
+const logger = require("./logger");
+const createApp = require("./app");
+const browserManager = require("./browser/browserManager");
 
-app.use(bodyParser.json({}))
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(cors())
-if (process.env.NODE_ENV !== 'development') {
-    let server = app.listen(port, () => { console.log(`Server running on port ${port}`) })
-    try {
-        server.timeout = global.timeOut
-    } catch (e) { }
+// Fail closed: production must not run without API authentication.
+if (config.isProduction && !config.authToken) {
+	logger.error(
+		"FATAL: authToken is not set. Production refuses to start without API authentication - set authToken in the environment (.env).",
+	);
+	process.exit(1);
 }
-if (process.env.SKIP_LAUNCH != 'true') require('./module/createBrowser')
 
-const getSource = require('./endpoints/getSource')
-const solveTurnstileMin = require('./endpoints/solveTurnstile.min')
-const solveTurnstileMax = require('./endpoints/solveTurnstile.max')
-const wafSession = require('./endpoints/wafSession')
+const app = createApp();
+const server = app.listen(config.port, () => {
+	logger.info(`Server running on port ${config.port}`);
+});
+try {
+	server.timeout = config.timeoutMs;
+} catch (e) {}
 
-
-app.post('/cf-clearance-scraper', async (req, res) => {
-
-    const data = req.body
-
-    const check = reqValidate(data)
-
-    if (check !== true) return res.status(400).json({ code: 400, message: 'Bad Request', schema: check })
-
-    if (authToken && data.authToken !== authToken) return res.status(401).json({ code: 401, message: 'Unauthorized' })
-
-    if (global.browserLength >= global.browserLimit) return res.status(429).json({ code: 429, message: 'Too Many Requests' })
-
-    if (process.env.SKIP_LAUNCH != 'true' && !global.browser) return res.status(500).json({ code: 500, message: 'The scanner is not ready yet. Please try again a little later.' })
-
-    var result = { code: 500 }
-
-    global.browserLength++
-
-    switch (data.mode) {
-        case "source":
-            result = await getSource(data).then(res => { return { source: res, code: 200 } }).catch(err => { return { code: 500, message: err.message } })
-            break;
-        case "turnstile-min":
-            result = await solveTurnstileMin(data).then(res => { return { token: res, code: 200 } }).catch(err => { return { code: 500, message: err.message } })
-            break;
-        case "turnstile-max":
-            result = await solveTurnstileMax(data).then(res => { return { token: res, code: 200 } }).catch(err => { return { code: 500, message: err.message } })
-            break;
-        case "waf-session":
-            result = await wafSession(data).then(res => { return { ...res, code: 200 } }).catch(err => { return { code: 500, message: err.message } })
-            break;
-    }
-
-    global.browserLength--
-
-    res.status(result.code ?? 500).send(result)
-})
-
-app.use((req, res) => { res.status(404).json({ code: 404, message: 'Not Found' }) })
-
-if (process.env.NODE_ENV == 'development') module.exports = app
+if (!config.skipLaunch) browserManager.start();
