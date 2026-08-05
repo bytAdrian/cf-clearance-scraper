@@ -4,7 +4,13 @@ const app = require("../src/app")();
 const browserManager = require("../src/browser/browserManager");
 const request = require("supertest");
 
+// These tests drive a real browser against live Cloudflare sites, which cannot
+// pass from a CI runner's datacenter IP. Gate them behind RUN_INTEGRATION so CI
+// skips them; run the full suite on the Pi with RUN_INTEGRATION=1 npm test.
+const live = process.env.RUN_INTEGRATION ? test : test.skip;
+
 beforeAll(async () => {
+	if (!process.env.RUN_INTEGRATION) return;
 	await browserManager.start();
 	while (!browserManager.isReady()) {
 		await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -12,10 +18,11 @@ beforeAll(async () => {
 }, 30000);
 
 afterAll(async () => {
+	if (!process.env.RUN_INTEGRATION) return;
 	await browserManager.shutdown();
 });
 
-test("Scraping Page Source from Cloudflare Protection", async () => {
+live("Scraping Page Source from Cloudflare Protection", async () => {
 	return request(app)
 		.post("/cf-clearance-scraper")
 		.send({
@@ -28,7 +35,7 @@ test("Scraping Page Source from Cloudflare Protection", async () => {
 		});
 }, 60000);
 
-test("Creating a Turnstile Token With Site Key [min]", async () => {
+live("Creating a Turnstile Token With Site Key [min]", async () => {
 	return request(app)
 		.post("/cf-clearance-scraper")
 		.send({
@@ -42,7 +49,7 @@ test("Creating a Turnstile Token With Site Key [min]", async () => {
 		});
 }, 60000);
 
-test("Creating a Turnstile Token With Site Key [max]", async () => {
+live("Creating a Turnstile Token With Site Key [max]", async () => {
 	return request(app)
 		.post("/cf-clearance-scraper")
 		.send({
@@ -55,7 +62,7 @@ test("Creating a Turnstile Token With Site Key [max]", async () => {
 		});
 }, 60000);
 
-test("Create Cloudflare WAF Session", async () => {
+live("Create Cloudflare WAF Session", async () => {
 	return request(app)
 		.post("/cf-clearance-scraper")
 		.send({
